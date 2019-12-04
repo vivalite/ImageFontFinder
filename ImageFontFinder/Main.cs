@@ -11,7 +11,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OpenCvSharp;
+using OpenCvSharp.Dnn;
 using OpenCvSharp.Extensions;
 
 
@@ -41,31 +43,32 @@ namespace ImageFontFinder
 
 		private void LoadImage()
 		{
-			var image = File.ReadAllBytes(@".\test.jpg");
+			List<Mat> croppedTexts = new List<Mat>();
+			byte[] image = File.ReadAllBytes(@".\test.jpg");
 
 			Mat originalMat = Mat.FromImageData(image, ImreadModes.AnyColor);
 			Mat displayMat = originalMat.Clone();
 
-			var options = new Dictionary<string, object>
+			Dictionary<string, object> options = new Dictionary<string, object>
 			{
 				{"recognize_granularity", "small"},
 				{"detect_direction", "true"},
-				{"vertexes_location", "false"},
+				{"vertexes_location", "true"},
 				{"probability", "true"},
 				{"detect_language", "true"}
 			};
 
-			var resultJson = client.Accurate(image, options);
+			JObject resultJson = client.Accurate(image, options);
 			//Debug.Print(resultJson.ToString());
 
-			var ocrResult = JsonConvert.DeserializeObject<dynamic>(resultJson.ToString());
+			dynamic ocrResult = JsonConvert.DeserializeObject<dynamic>(resultJson.ToString());
 
 			int wordCount = ocrResult.words_result_num;
 
 			for (int i = 0; i < wordCount; i++)
 			{
 				string blobText = ocrResult.words_result[i].words;
-				var chars = ocrResult.words_result[i].chars;
+				dynamic chars = ocrResult.words_result[i].chars;
 
 				for (int j = 0; j < chars.Count; j++)
 				{
@@ -83,14 +86,37 @@ namespace ImageFontFinder
 						displayMat.Rectangle(cropTextRect, Scalar.RandomColor(), 2, LineTypes.AntiAlias);
 
 						Mat croppedText = new Mat(originalMat, cropTextRect);
+						croppedTexts.Add(croppedText);
 
-						croppedText.SaveImage("!" + Guid.NewGuid() + ".png");
+						//croppedText.SaveImage("!" + Guid.NewGuid() + ".png");
 					}
-
 				}
 			}
 
-			pictureBoxOriginal.Image = BitmapConverter.ToBitmap(displayMat);
+			double widthTarget = 80;
+			double heightTarget = 80;
+
+			foreach (Mat croppedText in croppedTexts)
+			{
+				double scaleW = widthTarget / croppedText.Width;
+				double scaleH = heightTarget / croppedText.Height;
+				double scale = scaleW < scaleH ? scaleW : scaleH;
+
+				Mat resizedText = new Mat();
+				Cv2.Resize(croppedText, resizedText, new OpenCvSharp.Size(0, 0), scale, scale);
+
+				Cv2.ImShow("" + Guid.NewGuid().ToString(), resizedText);
+
+				//using (Mat net = CvDnn.ReadTensorFromONNX("vgg19.onnx"))
+				//{
+
+				//}
+
+			}
+
+
+
+			pictureBoxOriginal.Image = displayMat.ToBitmap();
 		}
 	}
 }
