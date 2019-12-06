@@ -15,7 +15,7 @@ using Newtonsoft.Json.Linq;
 using OpenCvSharp;
 using OpenCvSharp.Dnn;
 using OpenCvSharp.Extensions;
-
+using Size = OpenCvSharp.Size;
 
 namespace ImageFontFinder
 {
@@ -105,12 +105,17 @@ namespace ImageFontFinder
 				Mat resizedText = new Mat();
 				Cv2.Resize(croppedText, resizedText, new OpenCvSharp.Size(0, 0), scale, scale);
 
-				Cv2.ImShow("" + Guid.NewGuid().ToString(), resizedText);
+                //Cv2.ImShow("" + Guid.NewGuid().ToString(), resizedText);
 
-				//using (Mat net = CvDnn.ReadTensorFromONNX("vgg19.onnx"))
-				//{
+                using (Net net = CvDnn.ReadNetFromTensorflow("all_freezed_vgg19_tf18.pb"))
+				{
+                    var inputBlob = CvDnn.BlobFromImage(croppedText, 1, new Size(224, 224), new Scalar(104, 117, 123));
+                    net.SetInput(inputBlob);
+                    var prob = net.Forward();
+                    GetMaxClass(prob, out int classId, out double classProb);
 
-				//}
+                    Debug.Print($"ClassID:{classId}, classProb:{classProb}");
+                }
 
 			}
 
@@ -118,5 +123,14 @@ namespace ImageFontFinder
 
 			pictureBoxOriginal.Image = displayMat.ToBitmap();
 		}
-	}
+
+
+        private static void GetMaxClass(Mat probBlob, out int classId, out double classProb)
+        {
+            // reshape the blob to 1x1000 matrix
+            var probMat = probBlob.Reshape(1, 1);
+            Cv2.MinMaxLoc(probMat, out _, out classProb, out _, out var classNumber);
+            classId = classNumber.X;
+        }
+    }
 }
