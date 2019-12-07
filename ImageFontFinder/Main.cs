@@ -104,13 +104,13 @@ namespace ImageFontFinder
 				double scale = scaleW < scaleH ? scaleW : scaleH;
 
 				Mat resizedText = new Mat();
-				Cv2.Resize(croppedText, resizedText, new OpenCvSharp.Size(0, 0), scale, scale);
+				Cv2.Resize(croppedText, resizedText, new OpenCvSharp.Size(0, 0), scale, scale, InterpolationFlags.Lanczos4);
 
 				//Cv2.ImShow("" + Guid.NewGuid().ToString(), resizedText);
 
 				using (Net net = CvDnn.ReadNetFromTensorflow("all_freezed_vgg19_tf18.pb"))
 				{
-					var inputBlob = CvDnn.BlobFromImage(croppedText, 1, new Size(224, 224), new Scalar(104, 117, 123));
+					var inputBlob = CvDnn.BlobFromImage(croppedText, 1, new Size(widthTarget, heightTarget), new Scalar(104, 117, 123));
 					net.SetInput(inputBlob);
 					var prob = net.Forward();
 					GetMaxClass(prob, out int classId, out double classProb);
@@ -150,13 +150,8 @@ namespace ImageFontFinder
 
 			}
 
-			if (classLable.Count > 0)
-			{
-				return classLable[classId];
-			}
-
-			return "";
-		}
+			return classLable.Count > 0 ? classLable[classId] : "";
+        }
 
 		private static void GetMaxClass(Mat probBlob, out int classId, out double classProb)
 		{
