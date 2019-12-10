@@ -97,7 +97,7 @@ namespace ImageFontFinder
                     if (segmentData.IsCJK)
                     {
                         Rect cropTextRect = new Rect(segmentData.TextCharLeft, segmentData.TextCharTop, (int)(segmentData.TextCharWidth * 2), (int)(segmentData.TextCharHeight * 1.2));
-                        displayMat.Rectangle(cropTextRect, Scalar.RandomColor(), 2, LineTypes.AntiAlias);
+                        //displayMat.Rectangle(cropTextRect, Scalar.RandomColor(), 2, LineTypes.AntiAlias); // mark every word
 
                         Mat croppedText = new Mat(originalMat, cropTextRect);
                         croppedTexts.Add(croppedText);
@@ -172,9 +172,7 @@ namespace ImageFontFinder
                 }
             }
 
-            // done processing, output
-
-            pictureBoxOriginal.Image = displayMat.ToBitmap();
+            // done image processing, calculating
 
             var groupedTextLines = _textSegments.Where(x => x.IsCJK).GroupBy(
                 x => new
@@ -254,7 +252,12 @@ namespace ImageFontFinder
                     }
                 }
 
+                Rect textLineRect = new Rect((int)textLine.FirstOrDefault()?.TextLineLeft, (int)textLine.FirstOrDefault()?.TextLineTop, (int)textLine.FirstOrDefault()?.TextLineWidth, (int)textLine.FirstOrDefault()?.TextLineHeight);
+                displayMat.Rectangle(textLineRect, Scalar.RandomColor(), 2, LineTypes.AntiAlias);
+
             }
+
+            pictureBoxOriginal.Image = displayMat.ToBitmap();
         }
 
         Dictionary<int, string> classLable = new Dictionary<int, string>();
