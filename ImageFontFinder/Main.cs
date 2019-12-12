@@ -42,15 +42,24 @@ namespace ImageFontFinder
 
         private void buttonLoadImage_Click(object sender, EventArgs e)
         {
-            LoadImage();
+            OpenFileDialog fileDialog = new OpenFileDialog()
+            {
+                Filter = "All Graphics Types|*.bmp;*.jpg;*.jpeg;*.png;*.tif;*.tiff"
+            };
+
+            if (fileDialog.ShowDialog() == DialogResult.OK)
+            {
+
+                LoadImage(fileDialog.FileName);
+            }
         }
 
-        private void LoadImage()
+        private void LoadImage(string filePath)
         {
             _textSegments.Clear();
 
             List<Mat> croppedTexts = new List<Mat>();
-            byte[] image = File.ReadAllBytes(@".\test.jpg");
+            byte[] image = File.ReadAllBytes(filePath);
 
             Mat originalMat = Mat.FromImageData(image, ImreadModes.AnyColor);
             Mat displayMat = originalMat.Clone();
