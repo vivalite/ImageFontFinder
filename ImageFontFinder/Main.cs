@@ -24,6 +24,8 @@ namespace ImageFontFinder
     {
         Baidu.Aip.Ocr.Ocr _client;
         List<TextSegmentData> _textSegments = new List<TextSegmentData>();
+        Size _imageSize = new Size(1, 1);
+
 
         public Main()
         {
@@ -44,7 +46,8 @@ namespace ImageFontFinder
         {
             OpenFileDialog fileDialog = new OpenFileDialog()
             {
-                Filter = "All Graphics Types|*.bmp;*.jpg;*.jpeg;*.png;*.tif;*.tiff"
+                Filter = "All Graphics Types|*.bmp;*.jpg;*.jpeg;*.png;*.tif;*.tiff", 
+                ShowHelp = true
             };
 
             if (fileDialog.ShowDialog() == DialogResult.OK)
@@ -58,11 +61,13 @@ namespace ImageFontFinder
         {
             _textSegments.Clear();
 
-            List<Mat> croppedTexts = new List<Mat>();
+            List<Mat> croppedChars = new List<Mat>();
             byte[] image = File.ReadAllBytes(filePath);
 
             Mat originalMat = Mat.FromImageData(image, ImreadModes.AnyColor);
             Mat displayMat = originalMat.Clone();
+
+            _imageSize = originalMat.Size();
 
             Dictionary<string, object> options = new Dictionary<string, object>
             {
@@ -73,7 +78,7 @@ namespace ImageFontFinder
                 {"detect_language", "true"}
             };
 
-            JObject resultJson = _client.Accurate(image, options);
+            JObject resultJson = _client.Accurate(image, options); // OCR accurate
             //Debug.Print(resultJson.ToString());
 
             dynamic ocrResult = JsonConvert.DeserializeObject<dynamic>(resultJson.ToString());
@@ -105,12 +110,16 @@ namespace ImageFontFinder
 
                     if (segmentData.IsCJK)
                     {
-                        Rect cropTextRect = new Rect(segmentData.TextCharLeft, segmentData.TextCharTop, (int)(segmentData.TextCharWidth * 2), (int)(segmentData.TextCharHeight * 1.2));
+                        Rect cropCharRect = new Rect(segmentData.TextCharLeft, segmentData.TextCharTop, (int)(segmentData.TextCharWidth * 2), (int)(segmentData.TextCharHeight * 1.2));
                         //displayMat.Rectangle(cropTextRect, Scalar.RandomColor(), 2, LineTypes.AntiAlias); // mark every word
 
-                        Mat croppedText = new Mat(originalMat, cropTextRect);
-                        croppedTexts.Add(croppedText);
-                        segmentData.TextCharCroppedMat = croppedText.Clone();
+                        Mat croppedChar = new Mat(originalMat, cropCharRect);
+                        croppedChars.Add(croppedChar);
+                        segmentData.TextCharCroppedMat = croppedChar.Clone();
+
+                        Rect cropTextRect = new Rect(segmentData.TextLineLeft,segmentData.TextLineTop, segmentData.TextLineWidth, segmentData.TextLineHeight);
+                        Mat croppedLine = new Mat(originalMat, cropTextRect);
+                        segmentData.TextLineCroppedMat = croppedLine.Clone();
 
                         //croppedText.SaveImage("!" + Guid.NewGuid() + ".png");
                     }
@@ -301,12 +310,55 @@ namespace ImageFontFinder
             classId = classNumber.X;
         }
 
+        private void pictureBoxOriginal_Click(object sender, EventArgs e)
+        {
+            MouseEventArgs me = (MouseEventArgs)e;
 
+            if (_textSegments.Count > 0 && _imageSize.Width > 1)
+            {
+                double wfactor = (double)_imageSize.Width / pictureBoxOriginal.ClientSize.Width;
+                double hfactor = (double)_imageSize.Height / pictureBoxOriginal.ClientSize.Height;
+                double resizeFactor = Math.Max(wfactor, hfactor);
+                Size imageSize = new Size((int)(_imageSize.Width / resizeFactor), (int)(_imageSize.Height / resizeFactor));
+
+                double xOffset = pictureBoxOriginal.ClientSize.Width / 2 - imageSize.Width / 2;
+                double yOffset = pictureBoxOriginal.ClientSize.Height / 2 - imageSize.Height / 2;
+
+                double mouseX = me.X - xOffset;
+                double mouseY = me.Y - yOffset;
+
+                foreach (var dGroup in _textSegments.Where(x => x.IsCJK).GroupBy(
+                    x => new
+                    {
+                        x.TextLineWidth,
+                        x.TextLineTop,
+                        x.TextLineLeft,
+                        x.TextLineHeight
+                    }))
+                {
+                    var data = dGroup.ToArray().FirstOrDefault();
+
+                    if (data == null)
+                    {
+                        continue;
+                    }
+
+                    if (mouseX >= data.TextLineLeft / resizeFactor && mouseX <= (data.TextLineLeft + data.TextLineWidth) / resizeFactor &&
+                        mouseY >= data.TextLineTop / resizeFactor && mouseY <= (data.TextLineTop + data.TextLineHeight) / resizeFactor)
+                    {
+                        Debug.Print("===========>" + data.TextLine);
+                    }
+                }
+
+            }
+
+        }
     }
 
     public class TextSegmentData
     {
         public string TextLine { get; set; }
+        public Mat TextLineCroppedMat { get; set; }
         public int TextLineTop { get; set; }
         public int TextLineLeft { get; set; }
         public int TextLineWidth { get; set; }
