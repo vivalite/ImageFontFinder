@@ -32,13 +32,13 @@
             this.tableLayoutPanelMain = new System.Windows.Forms.TableLayoutPanel();
             this.pictureBoxOriginal = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanelResult = new System.Windows.Forms.TableLayoutPanel();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.pictureBoxOriginalCrop = new System.Windows.Forms.PictureBox();
+            this.pictureBoxGenerated = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanelMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxOriginal)).BeginInit();
             this.tableLayoutPanelResult.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxOriginalCrop)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxGenerated)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonLoadImage
@@ -86,8 +86,8 @@
             this.tableLayoutPanelResult.ColumnCount = 1;
             this.tableLayoutPanelResult.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanelResult.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanelResult.Controls.Add(this.pictureBox2, 0, 1);
-            this.tableLayoutPanelResult.Controls.Add(this.pictureBox1, 0, 0);
+            this.tableLayoutPanelResult.Controls.Add(this.pictureBoxGenerated, 0, 1);
+            this.tableLayoutPanelResult.Controls.Add(this.pictureBoxOriginalCrop, 0, 0);
             this.tableLayoutPanelResult.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanelResult.Location = new System.Drawing.Point(3, 427);
             this.tableLayoutPanelResult.Name = "tableLayoutPanelResult";
@@ -97,25 +97,25 @@
             this.tableLayoutPanelResult.Size = new System.Drawing.Size(770, 194);
             this.tableLayoutPanelResult.TabIndex = 2;
             // 
-            // pictureBox1
+            // pictureBoxOriginalCrop
             // 
-            this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBox1.Location = new System.Drawing.Point(3, 3);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(764, 91);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox1.TabIndex = 0;
-            this.pictureBox1.TabStop = false;
+            this.pictureBoxOriginalCrop.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pictureBoxOriginalCrop.Location = new System.Drawing.Point(3, 3);
+            this.pictureBoxOriginalCrop.Name = "pictureBoxOriginalCrop";
+            this.pictureBoxOriginalCrop.Size = new System.Drawing.Size(764, 91);
+            this.pictureBoxOriginalCrop.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBoxOriginalCrop.TabIndex = 0;
+            this.pictureBoxOriginalCrop.TabStop = false;
             // 
-            // pictureBox2
+            // pictureBoxGenerated
             // 
-            this.pictureBox2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBox2.Location = new System.Drawing.Point(3, 100);
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(764, 91);
-            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox2.TabIndex = 1;
-            this.pictureBox2.TabStop = false;
+            this.pictureBoxGenerated.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pictureBoxGenerated.Location = new System.Drawing.Point(3, 100);
+            this.pictureBoxGenerated.Name = "pictureBoxGenerated";
+            this.pictureBoxGenerated.Size = new System.Drawing.Size(764, 91);
+            this.pictureBoxGenerated.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBoxGenerated.TabIndex = 1;
+            this.pictureBoxGenerated.TabStop = false;
             // 
             // Main
             // 
@@ -128,8 +128,8 @@
             this.tableLayoutPanelMain.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxOriginal)).EndInit();
             this.tableLayoutPanelResult.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxOriginalCrop)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxGenerated)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -140,8 +140,8 @@
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanelMain;
 		private System.Windows.Forms.PictureBox pictureBoxOriginal;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanelResult;
-        private System.Windows.Forms.PictureBox pictureBox2;
-        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.PictureBox pictureBoxGenerated;
+        private System.Windows.Forms.PictureBox pictureBoxOriginalCrop;
     }
 }
 

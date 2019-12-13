@@ -4,8 +4,10 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Text;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -46,7 +48,7 @@ namespace ImageFontFinder
         {
             OpenFileDialog fileDialog = new OpenFileDialog()
             {
-                Filter = "All Graphics Types|*.bmp;*.jpg;*.jpeg;*.png;*.tif;*.tiff", 
+                Filter = "All Graphics Types|*.bmp;*.jpg;*.jpeg;*.png;*.tif;*.tiff",
                 ShowHelp = true
             };
 
@@ -117,7 +119,7 @@ namespace ImageFontFinder
                         croppedChars.Add(croppedChar);
                         segmentData.TextCharCroppedMat = croppedChar.Clone();
 
-                        Rect cropTextRect = new Rect(segmentData.TextLineLeft,segmentData.TextLineTop, segmentData.TextLineWidth, segmentData.TextLineHeight);
+                        Rect cropTextRect = new Rect(segmentData.TextLineLeft, segmentData.TextLineTop, segmentData.TextLineWidth, segmentData.TextLineHeight);
                         Mat croppedLine = new Mat(originalMat, cropTextRect);
                         segmentData.TextLineCroppedMat = croppedLine.Clone();
 
@@ -236,6 +238,11 @@ namespace ImageFontFinder
                     {
                         // significant font found
                         Debug.Print($"Text Line: {textLine.FirstOrDefault()?.TextLine}, Font Name: {orderedFontOccurenceList[0].Key}");
+
+                        foreach (TextSegmentData data in textLine)
+                        {
+                            data.TextLineFont = orderedFontOccurenceList[0].Key;
+                        }
                     }
                     else
                     {
@@ -266,6 +273,11 @@ namespace ImageFontFinder
                         var orderedFontProbList = fontListProb.OrderByDescending(x => x.Value).ToArray();
 
                         Debug.Print($"Text Line: {textLine.FirstOrDefault()?.TextLine}, Font Name: {orderedFontProbList[0].Key}");
+
+                        foreach (TextSegmentData data in textLine)
+                        {
+                            data.TextLineFont = orderedFontProbList[0].Key;
+                        }
 
                     }
                 }
@@ -346,12 +358,81 @@ namespace ImageFontFinder
                     if (mouseX >= data.TextLineLeft / resizeFactor && mouseX <= (data.TextLineLeft + data.TextLineWidth) / resizeFactor &&
                         mouseY >= data.TextLineTop / resizeFactor && mouseY <= (data.TextLineTop + data.TextLineHeight) / resizeFactor)
                     {
-                        Debug.Print("===========>" + data.TextLine);
+                        pictureBoxOriginalCrop.Image = data.TextLineCroppedMat.ToBitmap();
+
+                        Debug.Print("Font:" + data.TextLineFont);
+
+                        string fontBasePath = @"D:\FontImageGenerator\TextImageGenerator\TextImageGenerator\bin\Release\Fonts\";
+                        string fontPath = $@"{fontBasePath}{data.TextLineFont}\";
+                        fontPath = Directory.GetFiles(fontPath).FirstOrDefault();
+
+                        if (fontPath != null)
+                        {
+                            FontCollections fontCollections = new FontCollections();
+                            fontCollections.AddFont(fontPath, data.TextLineFont);
+
+                            var fontGroup = fontCollections.FontCollection.FirstOrDefault();
+
+                            var fontFamily = fontGroup?.FirstOrDefault()?.Families.FirstOrDefault();
+
+                            Debug.Print(data.TextLine + "  " + fontFamily+ "  " + fontPath);
+
+                            if (fontFamily != null)
+                            {
+                                Font font = new Font(fontFamily, 200);
+
+                                pictureBoxGenerated.Image = Utility.DrawText(data.TextLine, font);
+                            }
+                            fontCollections.Dispose();
+                        }
+
                     }
                 }
 
             }
 
+        }
+    }
+
+    public class FontCollections : IDisposable
+    {
+        private List<KeyValuePair<string, PrivateFontCollection>> _privateFontCollection = new List<KeyValuePair<string, PrivateFontCollection>>();
+
+        public ILookup<string, PrivateFontCollection> FontCollection => _privateFontCollection.ToLookup((i) => i.Key, (i) => i.Value);
+
+        public void AddFont(string fullFileName, string fontGroupName)
+        {
+            AddFont(File.ReadAllBytes(fullFileName), fontGroupName);
+        }
+
+        public void AddFont(byte[] fontBytes, string fontGroupName)
+        {
+            var handle = GCHandle.Alloc(fontBytes, GCHandleType.Pinned);
+            IntPtr pointer = handle.AddrOfPinnedObject();
+            try
+            {
+                PrivateFontCollection pfc = new PrivateFontCollection();
+                pfc.AddMemoryFont(pointer, fontBytes.Length);
+
+                _privateFontCollection.Add(new KeyValuePair<string, PrivateFontCollection>(fontGroupName, pfc));
+            }
+            finally
+            {
+                handle.Free();
+            }
+        }
+
+        public void Clear()
+        {
+            _privateFontCollection.Clear();
+        }
+
+        public void Dispose()
+        {
+            foreach (KeyValuePair<string, PrivateFontCollection> pair in _privateFontCollection)
+            {
+                pair.Value.Dispose();
+            }
         }
     }
 
@@ -374,6 +455,7 @@ namespace ImageFontFinder
         public double ClassProb1 { get; set; }
         public string ClassLable2 { get; set; }
         public double ClassProb2 { get; set; }
+        public string TextLineFont { get; set; }
 
     }
 }
