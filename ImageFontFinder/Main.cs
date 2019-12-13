@@ -28,6 +28,8 @@ namespace ImageFontFinder
         List<TextSegmentData> _textSegments = new List<TextSegmentData>();
         Size _imageSize = new Size(1, 1);
 
+        private FontCollections _fontCollections;
+
 
         public Main()
         {
@@ -41,6 +43,18 @@ namespace ImageFontFinder
             {
                 Timeout = 60000
             };
+
+            // load fonts
+
+            string fontBasePath = @"D:\FontImageGenerator\TextImageGenerator\TextImageGenerator\bin\Release\Fonts\";
+
+            _fontCollections = new FontCollections();
+
+            foreach (string file in Directory.EnumerateFiles(fontBasePath, "*.*", SearchOption.AllDirectories))
+            {
+                _fontCollections.AddFont(file, Path.GetFileNameWithoutExtension(file));
+            }
+
 
         }
 
@@ -123,7 +137,7 @@ namespace ImageFontFinder
                         Mat croppedLine = new Mat(originalMat, cropTextRect);
                         segmentData.TextLineCroppedMat = croppedLine.Clone();
 
-                        //croppedText.SaveImage("!" + Guid.NewGuid() + ".png");
+                        croppedChar.SaveImage("!" + DateTime.Now.Ticks + ".png");
                     }
 
                     _textSegments.Add(segmentData);
@@ -188,7 +202,7 @@ namespace ImageFontFinder
                     sgData.ClassLable2 = GetClassText(classId2);
                     sgData.ClassProb2 = classProb2;
 
-                    Debug.Print($"ClassID:{GetClassText(classId1)}, classProb:{classProb1} ClassID2:{GetClassText(classId2)}, classProb2:{classProb2}");
+                    Debug.Print($"Char:{sgData.TextChar},  ClassID:{GetClassText(classId1)}, classProb:{classProb1} ClassID2:{GetClassText(classId2)}, classProb2:{classProb2}");
                 }
             }
 
@@ -360,22 +374,15 @@ namespace ImageFontFinder
                     {
                         pictureBoxOriginalCrop.Image = data.TextLineCroppedMat.ToBitmap();
 
-                        Debug.Print("Font:" + data.TextLineFont);
-
                         string fontBasePath = @"D:\FontImageGenerator\TextImageGenerator\TextImageGenerator\bin\Release\Fonts\";
                         string fontPath = $@"{fontBasePath}{data.TextLineFont}\";
                         fontPath = Directory.GetFiles(fontPath).FirstOrDefault();
 
                         if (fontPath != null)
                         {
-                            FontCollections fontCollections = new FontCollections();
-                            fontCollections.AddFont(fontPath, data.TextLineFont);
+                            var fontFamily = _fontCollections.FontCollection[data.TextLineFont].FirstOrDefault()?.Families.FirstOrDefault();
 
-                            var fontGroup = fontCollections.FontCollection.FirstOrDefault();
-
-                            var fontFamily = fontGroup?.FirstOrDefault()?.Families.FirstOrDefault();
-
-                            Debug.Print(data.TextLine + "  " + fontFamily+ "  " + fontPath);
+                            //Debug.Print(data.TextLine + "  " + fontFamily);
 
                             if (fontFamily != null)
                             {
@@ -383,7 +390,7 @@ namespace ImageFontFinder
 
                                 pictureBoxGenerated.Image = Utility.DrawText(data.TextLine, font);
                             }
-                            fontCollections.Dispose();
+
                         }
 
                     }
@@ -420,6 +427,7 @@ namespace ImageFontFinder
             {
                 handle.Free();
             }
+
         }
 
         public void Clear()
