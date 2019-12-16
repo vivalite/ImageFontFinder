@@ -137,7 +137,7 @@ namespace ImageFontFinder
                         Mat croppedLine = new Mat(originalMat, cropTextRect);
                         segmentData.TextLineCroppedMat = croppedLine.Clone();
 
-                        croppedChar.SaveImage("!" + DateTime.Now.Ticks + ".png");
+                        //croppedChar.SaveImage("!" + DateTime.Now.Ticks + ".png");
                     }
 
                     _textSegments.Add(segmentData);
@@ -153,17 +153,15 @@ namespace ImageFontFinder
                 {
                     // preprocess
 
+                    //sgData.TextCharCroppedMat.SaveImage("!" + DateTime.Now.Ticks + ".png");
+
                     Mat greyText = sgData.TextCharCroppedMat.CvtColor(ColorConversionCodes.BGR2GRAY);
-
-                    Mat textAfterGradMorph = new Mat();
-                    Mat kernel = Cv2.GetStructuringElement(MorphShapes.Ellipse, new Size(2, 2));
-                    Cv2.MorphologyEx(greyText, textAfterGradMorph, MorphTypes.Gradient, kernel);
-
+                    
                     Mat textAfterThreshold = new Mat();
                     Cv2.Threshold(greyText, textAfterThreshold, 0, 255, ThresholdTypes.Binary | ThresholdTypes.Otsu);
 
                     Mat textAfterMorph = new Mat();
-                    kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new Size(2, 2));
+                    Mat kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new Size(1, 1));
                     Cv2.MorphologyEx(textAfterThreshold, textAfterMorph, MorphTypes.Open, kernel);
                     Cv2.MorphologyEx(textAfterMorph, textAfterMorph, MorphTypes.Close, kernel);
 
@@ -176,9 +174,18 @@ namespace ImageFontFinder
                     Mat resizedText = new Mat();
                     Cv2.Resize(textAfterMorph, resizedText, new Size(0, 0), scale, scale, InterpolationFlags.Cubic);
 
-                    resizedText = resizedText.CvtColor(ColorConversionCodes.GRAY2BGR);
-
                     //Cv2.ImShow("" + Guid.NewGuid(), resizedText);
+                    //resizedText.SaveImage("!" + DateTime.Now.Ticks + ".png");
+
+                    int whitePixelCount = resizedText.CountNonZero();
+                    int blackPixelCount = resizedText.Width * resizedText.Height - whitePixelCount;
+
+                    if (blackPixelCount > whitePixelCount)
+                    {
+                        Cv2.BitwiseNot(resizedText, resizedText);
+                    }
+
+                    resizedText = resizedText.CvtColor(ColorConversionCodes.GRAY2BGR); // inferring needs BGR input instead of gray
 
                     int classId1;
                     double classProb1;
@@ -190,19 +197,7 @@ namespace ImageFontFinder
                     sgData.ClassLable1 = GetClassText(classId1);
                     sgData.ClassProb1 = classProb1;
 
-                    int classId2;
-                    double classProb2;
-
-                    Cv2.BitwiseNot(resizedText, resizedText);
-
-                    inputBlob = CvDnn.BlobFromImage(resizedText, 1, new Size(netInputWidth, netInputHeight));
-                    net.SetInput(inputBlob);
-                    prob = net.Forward();
-                    GetMaxClass(prob, out classId2, out classProb2);
-                    sgData.ClassLable2 = GetClassText(classId2);
-                    sgData.ClassProb2 = classProb2;
-
-                    Debug.Print($"Char:{sgData.TextChar},  ClassID:{GetClassText(classId1)}, classProb:{classProb1} ClassID2:{GetClassText(classId2)}, classProb2:{classProb2}");
+                    Debug.Print($"Char:{sgData.TextChar},  ClassID:{GetClassText(classId1)}, classProb:{classProb1}" );
                 }
             }
 
@@ -220,80 +215,102 @@ namespace ImageFontFinder
 
             foreach (var textLine in groupedTextLines)
             {
-                Dictionary<string, int> fontListFreq = new Dictionary<string, int>();
+                //Dictionary<string, int> fontListFreq = new Dictionary<string, int>();
+
+                //foreach (TextSegmentData data in textLine)
+                //{
+                //    if (!fontListFreq.ContainsKey(data.ClassLable1))
+                //    {
+                //        fontListFreq.Add(data.ClassLable1, 1);
+                //    }
+                //    else
+                //    {
+                //        fontListFreq[data.ClassLable1]++;
+                //    }
+
+                //    if (!fontListFreq.ContainsKey(data.ClassLable2))
+                //    {
+                //        fontListFreq.Add(data.ClassLable2, 1);
+                //    }
+                //    else
+                //    {
+                //        fontListFreq[data.ClassLable2]++;
+                //    }
+
+                //}
+
+                //var orderedFontOccurenceList = fontListFreq.OrderByDescending(x => x.Value).ToArray();
+
+                //if (orderedFontOccurenceList.Length > 1)
+                //{
+                //    if (orderedFontOccurenceList[0].Value > orderedFontOccurenceList[1].Value)
+                //    {
+                //        // significant font found
+                //        Debug.Print($"Text Line: {textLine.FirstOrDefault()?.TextLine}, Font Name: {orderedFontOccurenceList[0].Key}");
+
+                //        foreach (TextSegmentData data in textLine)
+                //        {
+                //            data.TextLineFont = orderedFontOccurenceList[0].Key;
+                //        }
+                //    }
+                //    else
+                //    {
+                //        // no significant font found, take the highest probability
+                //        Dictionary<string, double> fontListProb = new Dictionary<string, double>();
+
+                //        foreach (TextSegmentData data in textLine)
+                //        {
+                //            if (!fontListProb.ContainsKey(data.ClassLable1))
+                //            {
+                //                fontListProb.Add(data.ClassLable1, data.ClassProb1);
+                //            }
+                //            else
+                //            {
+                //                fontListProb[data.ClassLable1] += data.ClassProb1;
+                //            }
+
+                //            if (!fontListProb.ContainsKey(data.ClassLable2))
+                //            {
+                //                fontListProb.Add(data.ClassLable2, data.ClassProb2);
+                //            }
+                //            else
+                //            {
+                //                fontListProb[data.ClassLable2] += data.ClassProb2;
+                //            }
+                //        }
+
+                //        var orderedFontProbList = fontListProb.OrderByDescending(x => x.Value).ToArray();
+
+                //        Debug.Print($"Text Line: {textLine.FirstOrDefault()?.TextLine}, Font Name: {orderedFontProbList[0].Key}");
+
+                //        foreach (TextSegmentData data in textLine)
+                //        {
+                //            data.TextLineFont = orderedFontProbList[0].Key;
+                //        }
+
+                //    }
+                //}
+
+                Dictionary<string, double> fontProbDict = new Dictionary<string, double>();
+
+                foreach (TextSegmentData segmentData in textLine)
+                {
+                    if (!fontProbDict.ContainsKey(segmentData.ClassLable1))
+                    {
+                        fontProbDict.Add(segmentData.ClassLable1, segmentData.ClassProb1);
+                    }
+                    else if(segmentData.ClassProb1 > fontProbDict[segmentData.ClassLable1])
+                    {
+                        fontProbDict[segmentData.ClassLable1] += segmentData.ClassProb1;
+                    }
+                }
+
+                var orderedFontProb = fontProbDict.OrderByDescending(x => x.Value).ToArray();
+                Debug.Print($"Text Line: {textLine.FirstOrDefault()?.TextLine}, Font Name: {orderedFontProb[0].Key}");
 
                 foreach (TextSegmentData data in textLine)
                 {
-                    if (!fontListFreq.ContainsKey(data.ClassLable1))
-                    {
-                        fontListFreq.Add(data.ClassLable1, 1);
-                    }
-                    else
-                    {
-                        fontListFreq[data.ClassLable1]++;
-                    }
-
-                    if (!fontListFreq.ContainsKey(data.ClassLable2))
-                    {
-                        fontListFreq.Add(data.ClassLable2, 1);
-                    }
-                    else
-                    {
-                        fontListFreq[data.ClassLable2]++;
-                    }
-
-                }
-
-                var orderedFontOccurenceList = fontListFreq.OrderByDescending(x => x.Value).ToArray();
-
-                if (orderedFontOccurenceList.Length > 1)
-                {
-                    if (orderedFontOccurenceList[0].Value > orderedFontOccurenceList[1].Value)
-                    {
-                        // significant font found
-                        Debug.Print($"Text Line: {textLine.FirstOrDefault()?.TextLine}, Font Name: {orderedFontOccurenceList[0].Key}");
-
-                        foreach (TextSegmentData data in textLine)
-                        {
-                            data.TextLineFont = orderedFontOccurenceList[0].Key;
-                        }
-                    }
-                    else
-                    {
-                        // no significant font found, take the highest probability
-                        Dictionary<string, double> fontListProb = new Dictionary<string, double>();
-
-                        foreach (TextSegmentData data in textLine)
-                        {
-                            if (!fontListProb.ContainsKey(data.ClassLable1))
-                            {
-                                fontListProb.Add(data.ClassLable1, data.ClassProb1);
-                            }
-                            else
-                            {
-                                fontListProb[data.ClassLable1] += data.ClassProb1;
-                            }
-
-                            if (!fontListProb.ContainsKey(data.ClassLable2))
-                            {
-                                fontListProb.Add(data.ClassLable2, data.ClassProb2);
-                            }
-                            else
-                            {
-                                fontListProb[data.ClassLable2] += data.ClassProb2;
-                            }
-                        }
-
-                        var orderedFontProbList = fontListProb.OrderByDescending(x => x.Value).ToArray();
-
-                        Debug.Print($"Text Line: {textLine.FirstOrDefault()?.TextLine}, Font Name: {orderedFontProbList[0].Key}");
-
-                        foreach (TextSegmentData data in textLine)
-                        {
-                            data.TextLineFont = orderedFontProbList[0].Key;
-                        }
-
-                    }
+                    data.TextLineFont = orderedFontProb[0].Key;
                 }
 
                 Rect textLineRect = new Rect((int)textLine.FirstOrDefault()?.TextLineLeft, (int)textLine.FirstOrDefault()?.TextLineTop, (int)textLine.FirstOrDefault()?.TextLineWidth, (int)textLine.FirstOrDefault()?.TextLineHeight);
@@ -397,6 +414,11 @@ namespace ImageFontFinder
                 }
 
             }
+
+        }
+
+        private void buttonTest_Click(object sender, EventArgs e)
+        {
 
         }
     }
