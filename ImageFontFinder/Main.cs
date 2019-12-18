@@ -157,13 +157,13 @@ namespace ImageFontFinder
 
                     Mat greyText = sgData.TextCharCroppedMat.CvtColor(ColorConversionCodes.BGR2GRAY);
                     
-                    Mat textAfterThreshold = new Mat();
-                    Cv2.Threshold(greyText, textAfterThreshold, 0, 255, ThresholdTypes.Binary | ThresholdTypes.Otsu);
+                    //Mat textAfterThreshold = new Mat();
+                    //Cv2.Threshold(greyText, textAfterThreshold, 0, 255, ThresholdTypes.Binary | ThresholdTypes.Otsu);
 
-                    Mat textAfterMorph = new Mat();
-                    Mat kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new Size(1, 1));
-                    Cv2.MorphologyEx(textAfterThreshold, textAfterMorph, MorphTypes.Open, kernel);
-                    Cv2.MorphologyEx(textAfterMorph, textAfterMorph, MorphTypes.Close, kernel);
+                    //Mat textAfterMorph = new Mat();
+                    //Mat kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new Size(1, 1));
+                    //Cv2.MorphologyEx(textAfterThreshold, textAfterMorph, MorphTypes.Open, kernel);
+                    //Cv2.MorphologyEx(textAfterMorph, textAfterMorph, MorphTypes.Close, kernel);
 
                     // resize
 
@@ -172,18 +172,10 @@ namespace ImageFontFinder
                     double scale = scaleW < scaleH ? scaleW : scaleH;
 
                     Mat resizedText = new Mat();
-                    Cv2.Resize(textAfterMorph, resizedText, new Size(0, 0), scale, scale, InterpolationFlags.Cubic);
+                    Cv2.Resize(greyText, resizedText, new Size(0, 0), scale, scale, InterpolationFlags.Cubic);
 
                     //Cv2.ImShow("" + Guid.NewGuid(), resizedText);
                     //resizedText.SaveImage("!" + DateTime.Now.Ticks + ".png");
-
-                    int whitePixelCount = resizedText.CountNonZero();
-                    int blackPixelCount = resizedText.Width * resizedText.Height - whitePixelCount;
-
-                    if (blackPixelCount > whitePixelCount)
-                    {
-                        Cv2.BitwiseNot(resizedText, resizedText);
-                    }
 
                     resizedText = resizedText.CvtColor(ColorConversionCodes.GRAY2BGR); // inferring needs BGR input instead of gray
 
