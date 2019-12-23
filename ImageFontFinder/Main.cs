@@ -27,6 +27,8 @@ namespace ImageFontFinder
         Baidu.Aip.Ocr.Ocr _client;
         List<TextSegmentData> _textSegments = new List<TextSegmentData>();
         Size _imageSize = new Size(1, 1);
+        Dictionary<int, string> _classLabel = new Dictionary<int, string>();
+        private string[] _classDefination = File.ReadAllLines("classes.csv");
 
         private FontCollections _fontCollections;
 
@@ -53,6 +55,22 @@ namespace ImageFontFinder
             foreach (string file in Directory.EnumerateFiles(fontBasePath, "*.*", SearchOption.AllDirectories))
             {
                 _fontCollections.AddFont(file, Path.GetFileNameWithoutExtension(file));
+            }
+
+            // load class label
+
+            foreach (string line in _classDefination)
+            {
+                string[] lineContents = line.Split(',');
+
+                int lineNum = -1;
+                int.TryParse(lineContents[0], out lineNum);
+
+                if (lineNum >= 0)
+                {
+                    _classLabel.Add(lineNum, lineContents[1]);
+                }
+
             }
 
 
@@ -137,7 +155,7 @@ namespace ImageFontFinder
                         Mat croppedLine = new Mat(originalMat, cropTextRect);
                         segmentData.TextLineCroppedMat = croppedLine.Clone();
 
-                        //croppedChar.SaveImage("!" + DateTime.Now.Ticks + ".png");
+                        croppedChar.SaveImage("!" + DateTime.Now.Ticks + ".png");
                     }
 
                     _textSegments.Add(segmentData);
@@ -156,7 +174,7 @@ namespace ImageFontFinder
                     //sgData.TextCharCroppedMat.SaveImage("!" + DateTime.Now.Ticks + ".png");
 
                     Mat greyText = sgData.TextCharCroppedMat.CvtColor(ColorConversionCodes.BGR2GRAY);
-                    
+
                     //Mat textAfterThreshold = new Mat();
                     //Cv2.Threshold(greyText, textAfterThreshold, 0, 255, ThresholdTypes.Binary | ThresholdTypes.Otsu);
 
@@ -189,7 +207,7 @@ namespace ImageFontFinder
                     sgData.ClassLable1 = GetClassText(classId1);
                     sgData.ClassProb1 = classProb1;
 
-                    Debug.Print($"Char:{sgData.TextChar},  ClassID:{GetClassText(classId1)}, classProb:{classProb1}" );
+                    Debug.Print($"Char:{sgData.TextChar},  ClassID:{GetClassText(classId1)}, classProb:{classProb1}");
                 }
             }
 
@@ -207,82 +225,6 @@ namespace ImageFontFinder
 
             foreach (var textLine in groupedTextLines)
             {
-                //Dictionary<string, int> fontListFreq = new Dictionary<string, int>();
-
-                //foreach (TextSegmentData data in textLine)
-                //{
-                //    if (!fontListFreq.ContainsKey(data.ClassLable1))
-                //    {
-                //        fontListFreq.Add(data.ClassLable1, 1);
-                //    }
-                //    else
-                //    {
-                //        fontListFreq[data.ClassLable1]++;
-                //    }
-
-                //    if (!fontListFreq.ContainsKey(data.ClassLable2))
-                //    {
-                //        fontListFreq.Add(data.ClassLable2, 1);
-                //    }
-                //    else
-                //    {
-                //        fontListFreq[data.ClassLable2]++;
-                //    }
-
-                //}
-
-                //var orderedFontOccurenceList = fontListFreq.OrderByDescending(x => x.Value).ToArray();
-
-                //if (orderedFontOccurenceList.Length > 1)
-                //{
-                //    if (orderedFontOccurenceList[0].Value > orderedFontOccurenceList[1].Value)
-                //    {
-                //        // significant font found
-                //        Debug.Print($"Text Line: {textLine.FirstOrDefault()?.TextLine}, Font Name: {orderedFontOccurenceList[0].Key}");
-
-                //        foreach (TextSegmentData data in textLine)
-                //        {
-                //            data.TextLineFont = orderedFontOccurenceList[0].Key;
-                //        }
-                //    }
-                //    else
-                //    {
-                //        // no significant font found, take the highest probability
-                //        Dictionary<string, double> fontListProb = new Dictionary<string, double>();
-
-                //        foreach (TextSegmentData data in textLine)
-                //        {
-                //            if (!fontListProb.ContainsKey(data.ClassLable1))
-                //            {
-                //                fontListProb.Add(data.ClassLable1, data.ClassProb1);
-                //            }
-                //            else
-                //            {
-                //                fontListProb[data.ClassLable1] += data.ClassProb1;
-                //            }
-
-                //            if (!fontListProb.ContainsKey(data.ClassLable2))
-                //            {
-                //                fontListProb.Add(data.ClassLable2, data.ClassProb2);
-                //            }
-                //            else
-                //            {
-                //                fontListProb[data.ClassLable2] += data.ClassProb2;
-                //            }
-                //        }
-
-                //        var orderedFontProbList = fontListProb.OrderByDescending(x => x.Value).ToArray();
-
-                //        Debug.Print($"Text Line: {textLine.FirstOrDefault()?.TextLine}, Font Name: {orderedFontProbList[0].Key}");
-
-                //        foreach (TextSegmentData data in textLine)
-                //        {
-                //            data.TextLineFont = orderedFontProbList[0].Key;
-                //        }
-
-                //    }
-                //}
-
                 Dictionary<string, double> fontProbDict = new Dictionary<string, double>();
 
                 foreach (TextSegmentData segmentData in textLine)
@@ -291,7 +233,7 @@ namespace ImageFontFinder
                     {
                         fontProbDict.Add(segmentData.ClassLable1, segmentData.ClassProb1);
                     }
-                    else if(segmentData.ClassProb1 > fontProbDict[segmentData.ClassLable1])
+                    else if (segmentData.ClassProb1 > fontProbDict[segmentData.ClassLable1])
                     {
                         fontProbDict[segmentData.ClassLable1] += segmentData.ClassProb1;
                     }
@@ -313,35 +255,34 @@ namespace ImageFontFinder
             pictureBoxOriginal.Image = displayMat.ToBitmap();
         }
 
-        Dictionary<int, string> classLable = new Dictionary<int, string>();
+
         private string GetClassText(int classId)
         {
-            if (classLable.Count == 0)
-            {
-                foreach (string line in File.ReadAllLines("classes.csv"))
-                {
-                    string[] lineContents = line.Split(',');
-
-                    int lineNum = -1;
-                    int.TryParse(lineContents[0], out lineNum);
-
-                    if (lineNum >= 0)
-                    {
-                        classLable.Add(lineNum, lineContents[1]);
-                    }
-
-                }
-
-            }
-
-            return classLable.Count > 0 ? classLable[classId] : "";
+            return _classLabel.Count > 0 ? _classLabel[classId] : "";
         }
 
-        private static void GetMaxClass(Mat probBlob, out int classId, out double classProb)
+        private void GetMaxClass(Mat probBlob, out int classId, out double classProb)
         {
+            float[] probData = new float[probBlob.Width * probBlob.Height];
+            Marshal.Copy(probBlob.Data, probData,0,probBlob.Width * probBlob.Height);
+
+            List<CharProbClass> probList = new List<CharProbClass>();
+
+            for (int i = 0; i < probData.Length; i++)
+            {
+                probList.Add(new CharProbClass()
+                {
+                    ID = i,
+                    ClassName = GetClassText(i),
+                    Probability = probData[i]
+                });
+            }
+
+            probList = probList.OrderByDescending(x => x.Probability).ToList();
+
             // reshape the blob to 1x1000 matrix
-            var probMat = probBlob.Reshape(1, 1);
-            Cv2.MinMaxLoc(probMat, out _, out classProb, out _, out var classNumber);
+            //var probMat = probBlob.Reshape(1, 1);
+            Cv2.MinMaxLoc(probBlob, out _, out classProb, out _, out var classNumber);
             classId = classNumber.X;
         }
 
@@ -479,5 +420,12 @@ namespace ImageFontFinder
         public double ClassProb2 { get; set; }
         public string TextLineFont { get; set; }
 
+    }
+
+    public class CharProbClass
+    {
+        public int ID { get; set; }
+        public string ClassName { get; set; }
+        public float Probability { get; set; }
     }
 }
