@@ -144,8 +144,14 @@ namespace ImageFontFinder
 
                     if (segmentData.IsCJK)
                     {
-                        Rect cropCharRect = new Rect(segmentData.TextCharLeft, segmentData.TextCharTop, (int)(segmentData.TextCharWidth * 2), (int)(segmentData.TextCharHeight * 1.2));
-                        //displayMat.Rectangle(cropTextRect, Scalar.RandomColor(), 2, LineTypes.AntiAlias); // mark every word
+                        Rect cropCharRect = new Rect(
+                            segmentData.TextCharLeft,
+                            segmentData.TextCharTop,
+                            GetSizeSafe((int)(segmentData.TextCharWidth * 1.5), segmentData.TextCharLeft, originalMat.Width),
+                            GetSizeSafe((int)(segmentData.TextCharHeight * 1.2), segmentData.TextCharTop, originalMat.Height)
+                            );
+
+                        //displayMat.Rectangle(cropCharRect, Scalar.RandomColor(), 2, LineTypes.AntiAlias); // mark every word
 
                         Mat croppedChar = new Mat(originalMat, cropCharRect);
                         croppedChars.Add(croppedChar);
@@ -155,7 +161,7 @@ namespace ImageFontFinder
                         Mat croppedLine = new Mat(originalMat, cropTextRect);
                         segmentData.TextLineCroppedMat = croppedLine.Clone();
 
-                        croppedChar.SaveImage("!" + DateTime.Now.Ticks + ".png");
+                        //croppedChar.SaveImage("!" + DateTime.Now.Ticks + ".png");
                     }
 
                     _textSegments.Add(segmentData);
@@ -165,7 +171,7 @@ namespace ImageFontFinder
             int netInputWidth = 80;
             int netInputHeight = 80;
 
-            using (Net net = CvDnn.ReadNetFromTensorflow("all_freezed_vgg19_tf18.pb"))
+            using (Net net = CvDnn.ReadNetFromTensorflow(AppDomain.CurrentDomain.BaseDirectory + "all_freezed_vgg19_tf18.pb"))
             {
                 foreach (TextSegmentData sgData in _textSegments.Where(x => x.IsCJK).ToArray())
                 {
@@ -192,10 +198,46 @@ namespace ImageFontFinder
                     Mat resizedText = new Mat();
                     Cv2.Resize(greyText, resizedText, new Size(0, 0), scale, scale, InterpolationFlags.Cubic);
 
-                    //Cv2.ImShow("" + Guid.NewGuid(), resizedText);
-                    //resizedText.SaveImage("!" + DateTime.Now.Ticks + ".png");
+                    int padTop = 0;
+                    int padBottom = 0;
+                    int padLeft = 0;
+                    int padRight = 0;
+                    if (resizedText.Width < netInputWidth)
+                    {
+                        padLeft = (netInputWidth - resizedText.Width) / 2;
+
+                        if ((netInputWidth - resizedText.Width) % 2 > 0)
+                        {
+                            padRight = padLeft + 1;
+                        }
+                        else
+                        {
+                            padRight = padLeft;
+                        }
+
+                    }
+                    else if (resizedText.Height < netInputHeight)
+                    {
+                        padTop = (netInputHeight - resizedText.Height) / 2;
+
+                        if ((netInputHeight - resizedText.Height) % 2 > 0)
+                        {
+                            padBottom = padTop + 1;
+                        }
+                        else
+                        {
+                            padBottom = padTop;
+                        }
+
+                    }
+
+                    resizedText = resizedText.CopyMakeBorder(padTop, padBottom, padLeft, padRight,
+                        BorderTypes.Constant, Scalar.White);
 
                     resizedText = resizedText.CvtColor(ColorConversionCodes.GRAY2BGR); // inferring needs BGR input instead of gray
+
+                    //Cv2.ImShow("" + Guid.NewGuid(), resizedText);
+                    resizedText.SaveImage("!" + DateTime.Now.Ticks + ".png");
 
                     int classId1;
                     double classProb1;
@@ -255,6 +297,11 @@ namespace ImageFontFinder
             pictureBoxOriginal.Image = displayMat.ToBitmap();
         }
 
+        private int GetSizeSafe(int inputSize, int offset, int totalSize)
+        {
+            var rtn = inputSize + offset <= totalSize ? inputSize : totalSize - offset;
+            return rtn;
+        }
 
         private string GetClassText(int classId)
         {
@@ -264,7 +311,7 @@ namespace ImageFontFinder
         private void GetMaxClass(Mat probBlob, out int classId, out double classProb)
         {
             float[] probData = new float[probBlob.Width * probBlob.Height];
-            Marshal.Copy(probBlob.Data, probData,0,probBlob.Width * probBlob.Height);
+            Marshal.Copy(probBlob.Data, probData, 0, probBlob.Width * probBlob.Height);
 
             List<CharProbClass> probList = new List<CharProbClass>();
 
