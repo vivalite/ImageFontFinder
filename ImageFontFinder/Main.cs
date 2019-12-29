@@ -400,6 +400,27 @@ namespace ImageFontFinder
         private void buttonTest_Click(object sender, EventArgs e)
         {
 
+            Mat orgMat = new Mat(AppDomain.CurrentDomain.BaseDirectory+ @"TestImage\z2.png", ImreadModes.AnyColor);
+
+            orgMat = orgMat.CvtColor(ColorConversionCodes.BGR2GRAY);
+            orgMat = orgMat.CvtColor(ColorConversionCodes.GRAY2BGR);
+
+            Cv2.ImShow("img", orgMat);
+
+            using (Net net = CvDnn.ReadNetFromTensorflow(AppDomain.CurrentDomain.BaseDirectory + "all_freezed_vgg19_tf18.pb"))
+            {
+                int classId1;
+                double classProb1;
+
+                var inputBlob = CvDnn.BlobFromImage(orgMat);
+                net.SetInput(inputBlob);
+                var prob = net.Forward();
+                GetMaxClass(prob, out classId1, out classProb1);
+
+                Debug.Print($"ClassID:{GetClassText(classId1)}, classProb:{classProb1}");
+            }
+
+
         }
     }
 
