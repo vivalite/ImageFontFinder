@@ -231,18 +231,17 @@ namespace ImageFontFinder
 
                     }
 
-                    resizedText = resizedText.CopyMakeBorder(padTop, padBottom, padLeft, padRight,
-                        BorderTypes.Constant, Scalar.White);
+                    resizedText = resizedText.CopyMakeBorder(padTop, padBottom, padLeft, padRight,BorderTypes.Constant, Scalar.White);
 
                     resizedText = resizedText.CvtColor(ColorConversionCodes.GRAY2BGR); // inferring needs BGR input instead of gray
 
                     //Cv2.ImShow("" + Guid.NewGuid(), resizedText);
-                    resizedText.SaveImage("!" + DateTime.Now.Ticks + ".png");
+                    //resizedText.SaveImage("!" + DateTime.Now.Ticks + ".png");
 
                     int classId1;
                     double classProb1;
 
-                    var inputBlob = CvDnn.BlobFromImage(resizedText, 1, new Size(netInputWidth, netInputHeight));
+                    var inputBlob = CvDnn.BlobFromImage(resizedText, 1, new Size(netInputWidth, netInputHeight), new Scalar(104, 117, 123));
                     net.SetInput(inputBlob);
                     var prob = net.Forward();
                     GetMaxClass(prob, out classId1, out classProb1);
@@ -390,6 +389,8 @@ namespace ImageFontFinder
 
                         }
 
+                        labelFontInfo.Text = $@"Font Name: {data.ClassLable1}            Font Probability:{data.ClassProb1:P2}";
+
                     }
                 }
 
@@ -400,7 +401,7 @@ namespace ImageFontFinder
         private void buttonTest_Click(object sender, EventArgs e)
         {
 
-            Mat orgMat = new Mat(AppDomain.CurrentDomain.BaseDirectory+ @"TestImage\z2.png", ImreadModes.AnyColor);
+            Mat orgMat = new Mat(AppDomain.CurrentDomain.BaseDirectory+ @"TestImage\z7.png", ImreadModes.AnyColor);
 
             orgMat = orgMat.CvtColor(ColorConversionCodes.BGR2GRAY);
             orgMat = orgMat.CvtColor(ColorConversionCodes.GRAY2BGR);
@@ -412,14 +413,13 @@ namespace ImageFontFinder
                 int classId1;
                 double classProb1;
 
-                var inputBlob = CvDnn.BlobFromImage(orgMat);
+                var inputBlob = CvDnn.BlobFromImage(orgMat,1, new Size(80, 80), new Scalar(104, 117, 123));
                 net.SetInput(inputBlob);
                 var prob = net.Forward();
                 GetMaxClass(prob, out classId1, out classProb1);
 
                 Debug.Print($"ClassID:{GetClassText(classId1)}, classProb:{classProb1}");
             }
-
 
         }
     }
