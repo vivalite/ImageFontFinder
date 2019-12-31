@@ -68,6 +68,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="all_freezed_vgg19_tf18.pb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -101,6 +102,9 @@
     <PackageReference Include="OpenCvSharp4.Windows">
       <Version>4.2.0.20191223</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="icons8-opened-folder-20.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

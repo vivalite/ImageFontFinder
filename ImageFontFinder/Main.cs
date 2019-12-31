@@ -22,7 +22,7 @@ using Size = OpenCvSharp.Size;
 
 namespace ImageFontFinder
 {
-    public partial class Main : Form
+    public sealed partial class Main : Form
     {
         Baidu.Aip.Ocr.Ocr _client;
         List<TextSegmentData> _textSegments = new List<TextSegmentData>();
@@ -73,7 +73,7 @@ namespace ImageFontFinder
 
             }
 
-
+            Text = "智能图片文字字体鉴别 V"+ Application.ProductVersion + "（科研专用）";
         }
 
         private void buttonLoadImage_Click(object sender, EventArgs e)
@@ -231,7 +231,7 @@ namespace ImageFontFinder
 
                     }
 
-                    resizedText = resizedText.CopyMakeBorder(padTop, padBottom, padLeft, padRight,BorderTypes.Constant, Scalar.White);
+                    resizedText = resizedText.CopyMakeBorder(padTop, padBottom, padLeft, padRight, BorderTypes.Constant, Scalar.White);
 
                     resizedText = resizedText.CvtColor(ColorConversionCodes.GRAY2BGR); // inferring needs BGR input instead of gray
 
@@ -389,7 +389,7 @@ namespace ImageFontFinder
 
                         }
 
-                        labelFontInfo.Text = $@"Font Name: {data.ClassLable1}            Font Probability:{data.ClassProb1:P2}";
+                        labelFontInfo.Text = $@"字体公司：{data.ClassLable1.Substring(0, data.ClassLable1.IndexOf("_", StringComparison.Ordinal))}    字体文件名：{data.ClassLable1}     相似度:{data.ClassProb1:P2}";
 
                     }
                 }
@@ -401,7 +401,7 @@ namespace ImageFontFinder
         private void buttonTest_Click(object sender, EventArgs e)
         {
 
-            Mat orgMat = new Mat(AppDomain.CurrentDomain.BaseDirectory+ @"TestImage\z7.png", ImreadModes.AnyColor);
+            Mat orgMat = new Mat(AppDomain.CurrentDomain.BaseDirectory + @"TestImage\z7.png", ImreadModes.AnyColor);
 
             orgMat = orgMat.CvtColor(ColorConversionCodes.BGR2GRAY);
             orgMat = orgMat.CvtColor(ColorConversionCodes.GRAY2BGR);
@@ -413,7 +413,7 @@ namespace ImageFontFinder
                 int classId1;
                 double classProb1;
 
-                var inputBlob = CvDnn.BlobFromImage(orgMat,1, new Size(80, 80), new Scalar(104, 117, 123));
+                var inputBlob = CvDnn.BlobFromImage(orgMat, 1, new Size(80, 80), new Scalar(104, 117, 123));
                 net.SetInput(inputBlob);
                 var prob = net.Forward();
                 GetMaxClass(prob, out classId1, out classProb1);

@@ -1,6 +1,6 @@
 ﻿namespace ImageFontFinder
 {
-    partial class Main
+    sealed partial class Main
     {
         /// <summary>
         /// Required designer variable.
@@ -28,21 +28,22 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             this.tableLayoutPanelMain = new System.Windows.Forms.TableLayoutPanel();
-            this.pictureBoxOriginal = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanelResult = new System.Windows.Forms.TableLayoutPanel();
-            this.pictureBoxGenerated = new System.Windows.Forms.PictureBox();
-            this.pictureBoxOriginalCrop = new System.Windows.Forms.PictureBox();
             this.labelFontInfo = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
             this.buttonTest = new System.Windows.Forms.Button();
+            this.pictureBoxOriginal = new System.Windows.Forms.PictureBox();
+            this.pictureBoxGenerated = new System.Windows.Forms.PictureBox();
+            this.pictureBoxOriginalCrop = new System.Windows.Forms.PictureBox();
             this.buttonLoadImage = new System.Windows.Forms.Button();
             this.tableLayoutPanelMain.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxOriginal)).BeginInit();
             this.tableLayoutPanelResult.SuspendLayout();
+            this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxOriginal)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxGenerated)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxOriginalCrop)).BeginInit();
-            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutPanelMain
@@ -63,17 +64,6 @@
             this.tableLayoutPanelMain.Size = new System.Drawing.Size(913, 624);
             this.tableLayoutPanelMain.TabIndex = 1;
             // 
-            // pictureBoxOriginal
-            // 
-            this.pictureBoxOriginal.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBoxOriginal.Location = new System.Drawing.Point(3, 64);
-            this.pictureBoxOriginal.Name = "pictureBoxOriginal";
-            this.pictureBoxOriginal.Size = new System.Drawing.Size(907, 357);
-            this.pictureBoxOriginal.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBoxOriginal.TabIndex = 1;
-            this.pictureBoxOriginal.TabStop = false;
-            this.pictureBoxOriginal.Click += new System.EventHandler(this.pictureBoxOriginal_Click);
-            // 
             // tableLayoutPanelResult
             // 
             this.tableLayoutPanelResult.ColumnCount = 1;
@@ -91,26 +81,6 @@
             this.tableLayoutPanelResult.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanelResult.Size = new System.Drawing.Size(907, 194);
             this.tableLayoutPanelResult.TabIndex = 2;
-            // 
-            // pictureBoxGenerated
-            // 
-            this.pictureBoxGenerated.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBoxGenerated.Location = new System.Drawing.Point(3, 80);
-            this.pictureBoxGenerated.Name = "pictureBoxGenerated";
-            this.pictureBoxGenerated.Size = new System.Drawing.Size(901, 71);
-            this.pictureBoxGenerated.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBoxGenerated.TabIndex = 1;
-            this.pictureBoxGenerated.TabStop = false;
-            // 
-            // pictureBoxOriginalCrop
-            // 
-            this.pictureBoxOriginalCrop.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBoxOriginalCrop.Location = new System.Drawing.Point(3, 3);
-            this.pictureBoxOriginalCrop.Name = "pictureBoxOriginalCrop";
-            this.pictureBoxOriginalCrop.Size = new System.Drawing.Size(901, 71);
-            this.pictureBoxOriginalCrop.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBoxOriginalCrop.TabIndex = 0;
-            this.pictureBoxOriginalCrop.TabStop = false;
             // 
             // labelFontInfo
             // 
@@ -146,16 +116,50 @@
             this.buttonTest.Visible = false;
             this.buttonTest.Click += new System.EventHandler(this.buttonTest_Click);
             // 
+            // pictureBoxOriginal
+            // 
+            this.pictureBoxOriginal.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pictureBoxOriginal.Location = new System.Drawing.Point(3, 64);
+            this.pictureBoxOriginal.Name = "pictureBoxOriginal";
+            this.pictureBoxOriginal.Size = new System.Drawing.Size(907, 357);
+            this.pictureBoxOriginal.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBoxOriginal.TabIndex = 1;
+            this.pictureBoxOriginal.TabStop = false;
+            this.pictureBoxOriginal.Click += new System.EventHandler(this.pictureBoxOriginal_Click);
+            // 
+            // pictureBoxGenerated
+            // 
+            this.pictureBoxGenerated.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pictureBoxGenerated.Location = new System.Drawing.Point(3, 80);
+            this.pictureBoxGenerated.Name = "pictureBoxGenerated";
+            this.pictureBoxGenerated.Size = new System.Drawing.Size(901, 71);
+            this.pictureBoxGenerated.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBoxGenerated.TabIndex = 1;
+            this.pictureBoxGenerated.TabStop = false;
+            // 
+            // pictureBoxOriginalCrop
+            // 
+            this.pictureBoxOriginalCrop.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pictureBoxOriginalCrop.Location = new System.Drawing.Point(3, 3);
+            this.pictureBoxOriginalCrop.Name = "pictureBoxOriginalCrop";
+            this.pictureBoxOriginalCrop.Size = new System.Drawing.Size(901, 71);
+            this.pictureBoxOriginalCrop.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBoxOriginalCrop.TabIndex = 0;
+            this.pictureBoxOriginalCrop.TabStop = false;
+            // 
             // buttonLoadImage
             // 
             this.buttonLoadImage.Dock = System.Windows.Forms.DockStyle.Left;
             this.buttonLoadImage.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F);
+            this.buttonLoadImage.Image = global::ImageFontFinder.Properties.Resources.icons8_opened_folder_20;
+            this.buttonLoadImage.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.buttonLoadImage.Location = new System.Drawing.Point(0, 0);
             this.buttonLoadImage.Margin = new System.Windows.Forms.Padding(10);
             this.buttonLoadImage.Name = "buttonLoadImage";
-            this.buttonLoadImage.Size = new System.Drawing.Size(139, 41);
+            this.buttonLoadImage.Size = new System.Drawing.Size(176, 41);
             this.buttonLoadImage.TabIndex = 4;
-            this.buttonLoadImage.Text = "Load Image";
+            this.buttonLoadImage.Text = "加载并处理图片  ";
+            this.buttonLoadImage.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.buttonLoadImage.UseVisualStyleBackColor = true;
             this.buttonLoadImage.Click += new System.EventHandler(this.buttonLoadImage_Click);
             // 
@@ -165,15 +169,16 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(913, 624);
             this.Controls.Add(this.tableLayoutPanelMain);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Main";
-            this.Text = "Image Font Finder";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.tableLayoutPanelMain.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxOriginal)).EndInit();
             this.tableLayoutPanelResult.ResumeLayout(false);
             this.tableLayoutPanelResult.PerformLayout();
+            this.panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxOriginal)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxGenerated)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxOriginalCrop)).EndInit();
-            this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
