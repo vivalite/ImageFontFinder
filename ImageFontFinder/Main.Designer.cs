@@ -38,6 +38,9 @@
             this.pictureBoxGenerated = new System.Windows.Forms.PictureBox();
             this.pictureBoxOriginalCrop = new System.Windows.Forms.PictureBox();
             this.buttonLoadImage = new System.Windows.Forms.Button();
+            this.buttonUp = new System.Windows.Forms.Button();
+            this.buttonDown = new System.Windows.Forms.Button();
+            this.labelCurrentFontNum = new System.Windows.Forms.Label();
             this.tableLayoutPanelMain.SuspendLayout();
             this.tableLayoutPanelResult.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -94,6 +97,9 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.labelCurrentFontNum);
+            this.panel1.Controls.Add(this.buttonDown);
+            this.panel1.Controls.Add(this.buttonUp);
             this.panel1.Controls.Add(this.buttonTest);
             this.panel1.Controls.Add(this.buttonLoadImage);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -163,6 +169,35 @@
             this.buttonLoadImage.UseVisualStyleBackColor = true;
             this.buttonLoadImage.Click += new System.EventHandler(this.buttonLoadImage_Click);
             // 
+            // buttonUp
+            // 
+            this.buttonUp.Location = new System.Drawing.Point(513, 10);
+            this.buttonUp.Name = "buttonUp";
+            this.buttonUp.Size = new System.Drawing.Size(75, 23);
+            this.buttonUp.TabIndex = 6;
+            this.buttonUp.Text = "Up";
+            this.buttonUp.UseVisualStyleBackColor = true;
+            this.buttonUp.Click += new System.EventHandler(this.buttonUp_Click);
+            // 
+            // buttonDown
+            // 
+            this.buttonDown.Location = new System.Drawing.Point(649, 10);
+            this.buttonDown.Name = "buttonDown";
+            this.buttonDown.Size = new System.Drawing.Size(75, 23);
+            this.buttonDown.TabIndex = 7;
+            this.buttonDown.Text = "Down";
+            this.buttonDown.UseVisualStyleBackColor = true;
+            this.buttonDown.Click += new System.EventHandler(this.buttonDown_Click);
+            // 
+            // labelCurrentFontNum
+            // 
+            this.labelCurrentFontNum.AutoSize = true;
+            this.labelCurrentFontNum.Location = new System.Drawing.Point(605, 15);
+            this.labelCurrentFontNum.Name = "labelCurrentFontNum";
+            this.labelCurrentFontNum.Size = new System.Drawing.Size(24, 13);
+            this.labelCurrentFontNum.TabIndex = 8;
+            this.labelCurrentFontNum.Text = "0/0";
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -176,6 +211,7 @@
             this.tableLayoutPanelResult.ResumeLayout(false);
             this.tableLayoutPanelResult.PerformLayout();
             this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxOriginal)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxGenerated)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxOriginalCrop)).EndInit();
@@ -193,6 +229,9 @@
         private System.Windows.Forms.Button buttonTest;
         private System.Windows.Forms.Button buttonLoadImage;
         private System.Windows.Forms.Label labelFontInfo;
+        private System.Windows.Forms.Label labelCurrentFontNum;
+        private System.Windows.Forms.Button buttonDown;
+        private System.Windows.Forms.Button buttonUp;
     }
 }
 

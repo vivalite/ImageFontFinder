@@ -32,6 +32,8 @@ namespace ImageFontFinder
 
         private FontCollections _fontCollections;
 
+        private TextSegmentData _currentTextSegmentData;
+        private int _currentFontProbIndex = 0;
 
         public Main()
         {
@@ -240,13 +242,15 @@ namespace ImageFontFinder
 
                     int classId1;
                     double classProb1;
+                    List<CharProbClass> probList;
 
                     var inputBlob = CvDnn.BlobFromImage(resizedText, 1, new Size(netInputWidth, netInputHeight), new Scalar(104, 117, 123));
                     net.SetInput(inputBlob);
                     var prob = net.Forward();
-                    GetMaxClass(prob, out classId1, out classProb1);
-                    sgData.ClassLable1 = GetClassText(classId1);
-                    sgData.ClassProb1 = classProb1;
+                    GetMaxClass(prob, out classId1, out classProb1, out probList);
+                    sgData.ClassLable = GetClassText(classId1);
+                    sgData.ClassProb = classProb1;
+                    sgData.ProbClassList = probList;
 
                     Debug.Print($"Char:{sgData.TextChar},  ClassID:{GetClassText(classId1)}, classProb:{classProb1}");
                 }
@@ -270,13 +274,13 @@ namespace ImageFontFinder
 
                 foreach (TextSegmentData segmentData in textLine)
                 {
-                    if (!fontProbDict.ContainsKey(segmentData.ClassLable1))
+                    if (!fontProbDict.ContainsKey(segmentData.ClassLable))
                     {
-                        fontProbDict.Add(segmentData.ClassLable1, segmentData.ClassProb1);
+                        fontProbDict.Add(segmentData.ClassLable, segmentData.ClassProb);
                     }
-                    else if (segmentData.ClassProb1 > fontProbDict[segmentData.ClassLable1])
+                    else if (segmentData.ClassProb > fontProbDict[segmentData.ClassLable])
                     {
-                        fontProbDict[segmentData.ClassLable1] += segmentData.ClassProb1;
+                        fontProbDict[segmentData.ClassLable] += segmentData.ClassProb;
                     }
                 }
 
@@ -286,6 +290,7 @@ namespace ImageFontFinder
                 foreach (TextSegmentData data in textLine)
                 {
                     data.TextLineFont = orderedFontProb[0].Key;
+                    data.ProbClassList = textLine.ToList().FirstOrDefault()?.ProbClassList;
                 }
 
                 Rect textLineRect = new Rect((int)textLine.FirstOrDefault()?.TextLineLeft, (int)textLine.FirstOrDefault()?.TextLineTop, (int)textLine.FirstOrDefault()?.TextLineWidth, (int)textLine.FirstOrDefault()?.TextLineHeight);
@@ -307,12 +312,12 @@ namespace ImageFontFinder
             return _classLabel.Count > 0 ? _classLabel[classId] : "";
         }
 
-        private void GetMaxClass(Mat probBlob, out int classId, out double classProb)
+        private void GetMaxClass(Mat probBlob, out int classId, out double classProb, out List<CharProbClass> probList)
         {
             float[] probData = new float[probBlob.Width * probBlob.Height];
             Marshal.Copy(probBlob.Data, probData, 0, probBlob.Width * probBlob.Height);
 
-            List<CharProbClass> probList = new List<CharProbClass>();
+            probList = new List<CharProbClass>();
 
             for (int i = 0; i < probData.Length; i++)
             {
@@ -358,7 +363,7 @@ namespace ImageFontFinder
                         x.TextLineHeight
                     }))
                 {
-                    var data = dGroup.ToArray().FirstOrDefault();
+                    TextSegmentData data = dGroup.ToArray().FirstOrDefault();
 
                     if (data == null)
                     {
@@ -368,6 +373,8 @@ namespace ImageFontFinder
                     if (mouseX >= data.TextLineLeft / resizeFactor && mouseX <= (data.TextLineLeft + data.TextLineWidth) / resizeFactor &&
                         mouseY >= data.TextLineTop / resizeFactor && mouseY <= (data.TextLineTop + data.TextLineHeight) / resizeFactor)
                     {
+                        _currentTextSegmentData = data;
+
                         pictureBoxOriginalCrop.Image = data.TextLineCroppedMat.ToBitmap();
 
                         string fontBasePath = @"D:\FontImageGenerator\TextImageGenerator\TextImageGenerator\bin\Release\Fonts\";
@@ -389,7 +396,9 @@ namespace ImageFontFinder
 
                         }
 
-                        labelFontInfo.Text = $@"字体公司：{data.ClassLable1.Substring(0, data.ClassLable1.IndexOf("_", StringComparison.Ordinal))}    字体文件名：{data.ClassLable1}     相似度:{data.ClassProb1:P2}";
+                        _currentFontProbIndex = 0;
+
+                        labelFontInfo.Text = $@"字体公司：{data.ClassLable.Substring(0, data.ClassLable.IndexOf("_", StringComparison.Ordinal))}    字体文件名：{data.ClassLable}     相似度:{data.ClassProb:P2}";
 
                     }
                 }
@@ -412,16 +421,87 @@ namespace ImageFontFinder
             {
                 int classId1;
                 double classProb1;
+                List<CharProbClass> probList;
 
                 var inputBlob = CvDnn.BlobFromImage(orgMat, 1, new Size(80, 80), new Scalar(104, 117, 123));
                 net.SetInput(inputBlob);
                 var prob = net.Forward();
-                GetMaxClass(prob, out classId1, out classProb1);
+                GetMaxClass(prob, out classId1, out classProb1, out probList);
 
                 Debug.Print($"ClassID:{GetClassText(classId1)}, classProb:{classProb1}");
             }
 
         }
+
+        private void buttonUp_Click(object sender, EventArgs e)
+        {
+
+            if (_currentFontProbIndex-1<0)
+            {
+                return;
+            }
+
+            _currentFontProbIndex--;
+            
+            string fontBasePath = @"D:\FontImageGenerator\TextImageGenerator\TextImageGenerator\bin\Release\Fonts\";
+            string fontPath = $@"{fontBasePath}{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName}\";
+            fontPath = Directory.GetFiles(fontPath).FirstOrDefault();
+
+            if (fontPath != null)
+            {
+                var fontFamily = _fontCollections.FontCollection[_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName].FirstOrDefault()?.Families.FirstOrDefault();
+
+                //Debug.Print(data.TextLine + "  " + fontFamily);
+
+                if (fontFamily != null)
+                {
+                    Font font = new Font(fontFamily, 200);
+
+                    pictureBoxGenerated.Image = Utility.DrawText(_currentTextSegmentData.TextLine, font);
+                }
+
+            }
+
+            labelFontInfo.Text = $@"字体公司：{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName.Substring(0, _currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName.IndexOf("_", StringComparison.Ordinal))}    字体文件名：{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName}     相似度:{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].Probability:P2}";
+            labelCurrentFontNum.Text = _currentFontProbIndex.ToString();
+
+        }
+
+        private void buttonDown_Click(object sender, EventArgs e)
+        {
+            if (_currentFontProbIndex+1 > 346 || _currentTextSegmentData== null)
+            {
+                return;
+            }
+
+            _currentFontProbIndex++;
+            
+            string fontBasePath = @"D:\FontImageGenerator\TextImageGenerator\TextImageGenerator\bin\Release\Fonts\";
+            string fontPath = $@"{fontBasePath}{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName}\";
+            fontPath = Directory.GetFiles(fontPath).FirstOrDefault();
+
+            if (fontPath != null)
+            {
+                var fontFamily = _fontCollections.FontCollection[_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName].FirstOrDefault()?.Families.FirstOrDefault();
+
+                //Debug.Print(data.TextLine + "  " + fontFamily);
+
+                if (fontFamily != null)
+                {
+                    Font font = new Font(fontFamily, 200);
+
+                    pictureBoxGenerated.Image = Utility.DrawText(_currentTextSegmentData.TextLine, font);
+                }
+
+            }
+
+            labelFontInfo.Text = $@"字体公司：{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName.Substring(0, _currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName.IndexOf("_", StringComparison.Ordinal))}    字体文件名：{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName}     相似度:{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].Probability:P2}";
+            labelCurrentFontNum.Text = _currentFontProbIndex.ToString();
+
+        }
+
+
+
     }
 
     public class FontCollections : IDisposable
@@ -482,11 +562,10 @@ namespace ImageFontFinder
         public int TextCharHeight { get; set; }
         public bool IsCJK { get; set; }
         public Mat TextCharCroppedMat { get; set; }
-        public string ClassLable1 { get; set; }
-        public double ClassProb1 { get; set; }
-        public string ClassLable2 { get; set; }
-        public double ClassProb2 { get; set; }
+        public string ClassLable { get; set; }
+        public double ClassProb { get; set; }
         public string TextLineFont { get; set; }
+        public List<CharProbClass> ProbClassList { get; set; }
 
     }
 
