@@ -29,6 +29,7 @@ namespace ImageFontFinder
         Size _imageSize = new Size(1, 1);
         Dictionary<int, string> _classLabel = new Dictionary<int, string>();
         private string[] _classDefination = File.ReadAllLines("classes.csv");
+        private string _fontBasePath = @"D:\FontImageGenerator\TextImageGenerator\TextImageGenerator\bin\Release\Fonts\";
 
         private FontCollections _fontCollections;
 
@@ -39,6 +40,7 @@ namespace ImageFontFinder
         {
             InitializeComponent();
 
+            // these are 
             var APP_ID = "17917707";
             var API_KEY = "34cIesqLIgj2advlwktx0D0K";
             var SECRET_KEY = "GUmlGTeFtIfqctLWLRabiV2aWrliPltB";
@@ -49,12 +51,9 @@ namespace ImageFontFinder
             };
 
             // load fonts
-
-            string fontBasePath = @"D:\FontImageGenerator\TextImageGenerator\TextImageGenerator\bin\Release\Fonts\";
-
             _fontCollections = new FontCollections();
 
-            foreach (string file in Directory.EnumerateFiles(fontBasePath, "*.*", SearchOption.AllDirectories))
+            foreach (string file in Directory.EnumerateFiles(_fontBasePath, "*.*", SearchOption.AllDirectories))
             {
                 _fontCollections.AddFont(file, Path.GetFileNameWithoutExtension(file));
             }
@@ -173,7 +172,7 @@ namespace ImageFontFinder
             int netInputWidth = 80;
             int netInputHeight = 80;
 
-            using (Net net = CvDnn.ReadNetFromTensorflow(AppDomain.CurrentDomain.BaseDirectory + "all_freezed_vgg19_tf18.pb"))
+            using (Net net = CvDnn.ReadNetFromTensorflow(AppDomain.CurrentDomain.BaseDirectory + "all_freezed_vgg19_tf115.pb"))
             {
                 foreach (TextSegmentData sgData in _textSegments.Where(x => x.IsCJK).ToArray())
                 {
@@ -377,29 +376,9 @@ namespace ImageFontFinder
 
                         pictureBoxOriginalCrop.Image = data.TextLineCroppedMat.ToBitmap();
 
-                        string fontBasePath = @"D:\FontImageGenerator\TextImageGenerator\TextImageGenerator\bin\Release\Fonts\";
-                        string fontPath = $@"{fontBasePath}{data.TextLineFont}\";
-                        fontPath = Directory.GetFiles(fontPath).FirstOrDefault();
-
-                        if (fontPath != null)
-                        {
-                            var fontFamily = _fontCollections.FontCollection[data.TextLineFont].FirstOrDefault()?.Families.FirstOrDefault();
-
-                            //Debug.Print(data.TextLine + "  " + fontFamily);
-
-                            if (fontFamily != null)
-                            {
-                                Font font = new Font(fontFamily, 200);
-
-                                pictureBoxGenerated.Image = Utility.DrawText(data.TextLine, font);
-                            }
-
-                        }
-
                         _currentFontProbIndex = 0;
 
-                        labelFontInfo.Text = $@"字体公司：{data.ClassLable.Substring(0, data.ClassLable.IndexOf("_", StringComparison.Ordinal))}    字体文件名：{data.ClassLable}     相似度:{data.ClassProb:P2}";
-
+                        DisplayFontImageInfo();
                     }
                 }
 
@@ -417,7 +396,7 @@ namespace ImageFontFinder
 
             Cv2.ImShow("img", orgMat);
 
-            using (Net net = CvDnn.ReadNetFromTensorflow(AppDomain.CurrentDomain.BaseDirectory + "all_freezed_vgg19_tf18.pb"))
+            using (Net net = CvDnn.ReadNetFromTensorflow(AppDomain.CurrentDomain.BaseDirectory + "all_freezed_vgg19_tf115.pb"))
             {
                 int classId1;
                 double classProb1;
@@ -443,27 +422,7 @@ namespace ImageFontFinder
 
             _currentFontProbIndex--;
             
-            string fontBasePath = @"D:\FontImageGenerator\TextImageGenerator\TextImageGenerator\bin\Release\Fonts\";
-            string fontPath = $@"{fontBasePath}{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName}\";
-            fontPath = Directory.GetFiles(fontPath).FirstOrDefault();
-
-            if (fontPath != null)
-            {
-                var fontFamily = _fontCollections.FontCollection[_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName].FirstOrDefault()?.Families.FirstOrDefault();
-
-                //Debug.Print(data.TextLine + "  " + fontFamily);
-
-                if (fontFamily != null)
-                {
-                    Font font = new Font(fontFamily, 200);
-
-                    pictureBoxGenerated.Image = Utility.DrawText(_currentTextSegmentData.TextLine, font);
-                }
-
-            }
-
-            labelFontInfo.Text = $@"字体公司：{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName.Substring(0, _currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName.IndexOf("_", StringComparison.Ordinal))}    字体文件名：{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName}     相似度:{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].Probability:P2}";
-            labelCurrentFontNum.Text = _currentFontProbIndex.ToString();
+            DisplayFontImageInfo();
 
         }
 
@@ -476,13 +435,19 @@ namespace ImageFontFinder
 
             _currentFontProbIndex++;
             
-            string fontBasePath = @"D:\FontImageGenerator\TextImageGenerator\TextImageGenerator\bin\Release\Fonts\";
-            string fontPath = $@"{fontBasePath}{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName}\";
+            DisplayFontImageInfo();
+        }
+
+        private void DisplayFontImageInfo()
+        {
+            string fontPath = $@"{_fontBasePath}{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName}\";
             fontPath = Directory.GetFiles(fontPath).FirstOrDefault();
 
             if (fontPath != null)
             {
-                var fontFamily = _fontCollections.FontCollection[_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName].FirstOrDefault()?.Families.FirstOrDefault();
+                var fontFamily = _fontCollections
+                    .FontCollection[_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName].FirstOrDefault()
+                    ?.Families.FirstOrDefault();
 
                 //Debug.Print(data.TextLine + "  " + fontFamily);
 
@@ -492,16 +457,12 @@ namespace ImageFontFinder
 
                     pictureBoxGenerated.Image = Utility.DrawText(_currentTextSegmentData.TextLine, font);
                 }
-
             }
 
-            labelFontInfo.Text = $@"字体公司：{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName.Substring(0, _currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName.IndexOf("_", StringComparison.Ordinal))}    字体文件名：{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName}     相似度:{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].Probability:P2}";
+            labelFontInfo.Text =
+                $@"字体公司：{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName.Substring(0, _currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName.IndexOf("_", StringComparison.Ordinal))}    字体文件名：{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].ClassName}     相似度:{_currentTextSegmentData.ProbClassList[_currentFontProbIndex].Probability:P2}";
             labelCurrentFontNum.Text = _currentFontProbIndex.ToString();
-
         }
-
-
-
     }
 
     public class FontCollections : IDisposable

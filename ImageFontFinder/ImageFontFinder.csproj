@@ -70,7 +70,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="all_freezed_vgg19_tf18.pb">
+    <None Include="all_freezed_vgg19_tf115.pb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="classes.csv">
