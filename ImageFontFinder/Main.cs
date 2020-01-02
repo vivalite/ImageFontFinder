@@ -40,7 +40,7 @@ namespace ImageFontFinder
         {
             InitializeComponent();
 
-            // these are 
+            // These are testing OCR api and will be expired soon. Please create your own from here: https://ai.baidu.com/tech/ocr/general
             var APP_ID = "17917707";
             var API_KEY = "34cIesqLIgj2advlwktx0D0K";
             var SECRET_KEY = "GUmlGTeFtIfqctLWLRabiV2aWrliPltB";
