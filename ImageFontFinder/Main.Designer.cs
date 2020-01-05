@@ -151,11 +151,11 @@
             // 
             // buttonDown
             // 
-            this.buttonDown.Location = new System.Drawing.Point(649, 10);
+            this.buttonDown.Location = new System.Drawing.Point(642, 10);
             this.buttonDown.Name = "buttonDown";
             this.buttonDown.Size = new System.Drawing.Size(75, 23);
             this.buttonDown.TabIndex = 7;
-            this.buttonDown.Text = "Down";
+            this.buttonDown.Text = "-";
             this.buttonDown.UseVisualStyleBackColor = true;
             this.buttonDown.Click += new System.EventHandler(this.buttonDown_Click);
             // 
@@ -165,7 +165,7 @@
             this.buttonUp.Name = "buttonUp";
             this.buttonUp.Size = new System.Drawing.Size(75, 23);
             this.buttonUp.TabIndex = 6;
-            this.buttonUp.Text = "Up";
+            this.buttonUp.Text = "+";
             this.buttonUp.UseVisualStyleBackColor = true;
             this.buttonUp.Click += new System.EventHandler(this.buttonUp_Click);
             // 
