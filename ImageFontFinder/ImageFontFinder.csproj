@@ -35,6 +35,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>icons8-analyze-80.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -105,6 +108,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="icons8-opened-folder-20.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="icons8-analyze-80.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
